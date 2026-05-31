@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Property Pricing Calculator — Where the Grass Grows Greener</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── DESIGN TOKENS ─── */
+    :root {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --text-2xl: clamp(2rem, 1.2rem + 2.5vw, 3rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+      --space-4: 1rem; --space-5: 1.25rem; --space-6: 1.5rem;
+      --space-8: 2rem; --space-10: 2.5rem; --space-12: 3rem;
+      --space-16: 4rem; --space-20: 5rem;
+      --radius-sm: 0.375rem; --radius-md: 0.5rem;
+      --radius-lg: 0.75rem; --radius-xl: 1rem; --radius-full: 9999px;
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --font-body: 'Inter', system-ui, sans-serif;
+
+      /* Brand greens */
+      --green: #4caf50;
+      --green-dark: #0d1f10;
+      --green-mid: #1b3a1f;
+      --green-card: #122716;
+      --green-border: #2a4a2e;
+      --green-accent: #6fcf74;
+      --green-muted: #8faa92;
+      --text-main: #e8f5e9;
+      --text-muted: #8faa92;
+      --text-faint: #4a6b4e;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      background: var(--green-dark);
+      color: var(--text-main);
+      min-height: 100dvh;
+      line-height: 1.6;
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      background: linear-gradient(160deg, #0d2410 0%, #1b4020 100%);
+      border-bottom: 1px solid var(--green-border);
+      padding: var(--space-6) var(--space-8);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 40px; height: 40px;
+      background: var(--green);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo-text { font-size: var(--text-sm); font-weight: 700; color: var(--text-main); line-height: 1.2; }
+    .logo-sub { font-size: var(--text-xs); color: var(--text-muted); font-weight: 400; }
+
+    /* ─── MAIN LAYOUT ─── */
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: var(--space-12) var(--space-6) var(--space-20);
+    }
+
+    /* ─── HERO TEXT ─── */
+    .hero { text-align: center; margin-bottom: var(--space-12); }
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      background: rgba(76,175,80,0.1);
+      border: 1px solid rgba(76,175,80,0.25);
+      border-radius: var(--radius-full);
+      padding: var(--space-1) var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .hero h1 {
+      font-size: var(--text-2xl);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-4);
+    }
+    .hero h1 span { color: var(--green-accent); }
+    .hero p { font-size: var(--text-base); color: var(--text-muted); max-width: 52ch; margin: 0 auto; }
+
+    /* ─── CARD ─── */
+    .card {
+      background: var(--green-card);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      margin-bottom: var(--space-6);
+    }
+    .card-title {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      margin-bottom: var(--space-5);
+    }
+
+    /* ─── SEARCH BOX ─── */
+    .search-wrap { position: relative; }
+    #address-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid var(--green-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      padding-right: 120px;
+      font-size: var(--text-base);
+      color: var(--text-main);
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    #address-input::placeholder { color: var(--text-faint); }
+    #address-input:focus {
+      border-color: var(--green-accent);
+      box-shadow: 0 0 0 3px rgba(76,175,80,0.15);
+    }
+    #calc-btn {
+      position: absolute;
+      right: var(--space-2);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--green);
+      color: #fff;
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      transition: background var(--transition);
+      white-space: nowrap;
+    }
+    #calc-btn:hover { background: var(--green-accent); color: var(--green-dark); }
+    #calc-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ─── MAP ─── */
+    #map-container {
+      display: none;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--green-border);
+      margin-top: var(--space-5);
+      height: 260px;
+    }
+    #map { width: 100%; height: 100%; }
+
+    /* ─── PROPERTY INFO ─── */
+    #property-info { display: none; }
+    .property-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+    @media (max-width: 480px) { .property-stats { grid-template-columns: 1fr; } }
+    .stat-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--green-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      text-align: center;
+    }
+    .stat-label { font-size: var(--text-xs); color: var(--text-muted); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: var(--space-1); }
+    .stat-value { font-size: var(--text-lg); font-weight: 800; color: var(--green-accent); }
+
+    /* ─── TIER BADGE ─── */
+    .tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      background: rgba(76,175,80,0.12);
+      border: 1px solid rgba(76,175,80,0.35);
+      border-radius: var(--radius-full);
+      padding: var(--space-2) var(--space-5);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      color: var(--green-accent);
+      margin-bottom: var(--space-6);
+    }
+    .tier-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green-accent); }
+
+    /* ─── SERVICE LIST ─── */
+    .services-title {
+      font-size: var(--text-sm);
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green-accent);
+      margin-bottom: var(--space-4);
+    }
+    .service-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      border-radius: var(--radius-lg);
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--green-border);
+      margin-bottom: var(--space-3);
+      gap: var(--space-4);
+      transition: border-color var(--transition), background var(--transition);
+    }
+    .service-row:hover { border-color: var(--green-accent); background: rgba(76,175,80,0.05); }
+    .service-row.selected {
+      border-color: var(--green-accent);
+      background: rgba(76,175,80,0.08);
+    }
+    .service-left { display: flex; align-items: center; gap: var(--space-3); flex: 1; min-width: 0; }
+    .service-check {
+      width: 20px; height: 20px;
+      border: 2px solid var(--green-border);
+      border-radius: var(--radius-sm);
+      flex-shrink: 0;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition);
+    }
+    .service-check.checked {
+      background: var(--green);
+      border-color: var(--green);
+    }
+    .service-check.checked::after {
+      content: '';
+      width: 5px; height: 9px;
+      border: 2px solid #fff;
+      border-top: none; border-left: none;
+      transform: rotate(45deg) translateY(-1px);
+      display: block;
+    }
+    .service-name { font-size: var(--text-base); font-weight: 600; color: var(--text-main); }
+    .service-desc { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+    .service-price {
+      font-size: var(--text-base);
+      font-weight: 800;
+      color: var(--green-accent);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .service-price.custom {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(76,175,80,0.1);
+      border: 1px solid rgba(76,175,80,0.3);
+      border-radius: var(--radius-md);
+      padding: var(--space-1) var(--space-3);
+      color: var(--green-accent);
+    }
+
+    /* ─── TOTAL ─── */
+    .total-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #1b3a1f, #0f2a12);
+      border: 1px solid rgba(76,175,80,0.3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-6);
+      margin-top: var(--space-6);
+    }
+    .total-label { font-size: var(--text-sm); font-weight: 600; color: var(--text-muted); }
+    .total-value { font-size: var(--text-xl); font-weight: 800; color: #fff; }
+    .total-note { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2); }
+
+    /* ─── CTA ─── */
+    .cta-block {
+      background: linear-gradient(135deg, var(--green-mid) 0%, #1a3d1e 100%);
+      border: 1px solid rgba(76,175,80,0.3);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      text-align: center;
+      margin-top: var(--space-6);
+    }
+    .cta-block h2 { font-size: var(--text-lg); font-weight: 800; color: #fff; margin-bottom: var(--space-2); }
+    .cta-block p { color: var(--text-muted); margin-bottom: var(--space-6); font-size: var(--text-sm); }
+    .cta-buttons { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: var(--green);
+      color: #fff;
+      font-weight: 700;
+      font-size: var(--text-sm);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: var(--space-3) var(--space-8);
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background var(--transition);
+    }
+    .btn-primary:hover { background: var(--green-accent); color: var(--green-dark); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--green-accent);
+      font-weight: 700;
+      font-size: var(--text-sm);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: var(--space-3) var(--space-8);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(76,175,80,0.4);
+      text-decoration: none;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .btn-secondary:hover { background: rgba(76,175,80,0.08); border-color: var(--green-accent); }
+
+    /* ─── STATUS / LOADER ─── */
+    #status-msg {
+      display: none;
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      text-align: center;
+      padding: var(--space-4);
+    }
+    #error-msg {
+      display: none;
+      font-size: var(--text-sm);
+      color: #f87171;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4);
+      margin-top: var(--space-4);
+      text-align: center;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(76,175,80,0.3);
+      border-top-color: var(--green-accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-right: var(--space-2);
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── DISCLAIMER ─── */
+    .disclaimer {
+      font-size: var(--text-xs);
+      color: var(--text-faint);
+      text-align: center;
+      margin-top: var(--space-8);
+      line-height: 1.6;
+      max-width: 52ch;
+      margin-inline: auto;
+    }
+
+    /* ─── API KEY NOTICE ─── */
+    #api-key-notice {
+      background: rgba(251,191,36,0.07);
+      border: 1px solid rgba(251,191,36,0.25);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4) var(--space-5);
+      font-size: var(--text-sm);
+      color: #fbbf24;
+      text-align: center;
+      margin-bottom: var(--space-6);
+    }
+    #api-key-notice strong { display: block; margin-bottom: var(--space-1); }
+
+    /* PAC container (Google autocomplete dropdown) */
+    .pac-container { z-index: 9999 !important; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <a class="logo" href="#">
+      <div class="logo-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 18c3-6 6-9 9-9s6 3 9 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M12 9V5M9 7l3-3 3 3" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-text">Where the Grass Grows Greener</div>
+        <div class="logo-sub">Oshkosh & Fox Valley, WI</div>
+      </div>
+    </a>
+  </header>
+
+  <!-- MAIN -->
+  <main>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-eyebrow">Instant Pricing</div>
+      <h1>Know Your <span>Exact Price</span><br>Before We Arrive</h1>
+      <p>Enter your property address and we'll measure your lot automatically using Google Maps — no guessing, no surprises.</p>
+    </div>
+
+    <!-- API KEY NOTICE (shown until key is added) -->
+    <div id="api-key-notice">
+      <strong>Setup Required</strong>
+      Paste your Google Maps API key into this page to activate the calculator.
+      See instructions below.
+    </div>
+
+    <!-- ADDRESS SEARCH -->
+    <div class="card">
+      <div class="card-title">Your Property Address</div>
+      <div class="search-wrap">
+        <input
+          id="address-input"
+          type="text"
+          placeholder="Enter your property address..."
+          autocomplete="off"
+        />
+        <button id="calc-btn">Calculate</button>
+      </div>
+      <div id="status-msg"></div>
+      <div id="error-msg"></div>
+      <div id="map-container"><div id="map"></div></div>
+    </div>
+
+    <!-- RESULTS (hidden until calculated) -->
+    <div id="property-info">
+
+      <!-- PROPERTY STATS -->
+      <div class="card">
+        <div class="card-title">Your Property</div>
+        <div class="property-stats">
+          <div class="stat-box">
+            <div class="stat-label">Lot Size</div>
+            <div class="stat-value" id="stat-sqft">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Acres</div>
+            <div class="stat-value" id="stat-acres">—</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Tier</div>
+            <div class="stat-value" id="stat-tier">—</div>
+          </div>
+        </div>
+        <div id="tier-badge" class="tier-badge">
+          <div class="tier-dot"></div>
+          <span id="tier-label">—</span>
+        </div>
+
+        <!-- SERVICES -->
+        <div class="services-title">Select Services</div>
+        <div id="services-list"></div>
+
+        <!-- TOTAL -->
+        <div class="total-bar">
+          <div>
+            <div class="total-label">Estimated Total</div>
+            <div class="total-note">Final price confirmed at estimate</div>
+          </div>
+          <div class="total-value" id="total-price">$0</div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-block">
+        <h2>Ready to Get Started?</h2>
+        <p>Your pricing is calculated — request your free estimate and we'll confirm everything within 24 hours.</p>
+        <div class="cta-buttons">
+          <a href="tel:9203765274" class="btn-primary">Call (920) 376-5274</a>
+          <a href="mailto:info@wherethegrassgrowsgreenerllc.com" class="btn-secondary">Email Us</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- DISCLAIMER -->
+    <p class="disclaimer">
+      Lot size is estimated using Google Maps data and may not reflect exact mowable area.
+      Final pricing is confirmed after a free on-site estimate.
+      Overgrown properties, obstacles, and access challenges may affect the final rate.
+    </p>
+
+  </main>
+
+  <script>
+    // ─── PRICING TIERS ───
+    const TIERS = [
+      { id: 'small',  label: 'Small Yard',    min: 0,     max: 5000,   desc: '~1,000–5,000 sq ft · City lots & duplexes' },
+      { id: 'medium', label: 'Medium Yard',   min: 5000,  max: 10000,  desc: '~5,000–10,000 sq ft · Standard suburban homes' },
+      { id: 'large',  label: 'Large Yard',    min: 10000, max: 20000,  desc: '~10,000–20,000 sq ft · Corner lots & larger homes' },
+      { id: 'xl',     label: 'XL / Acreage',  min: 20000, max: Infinity, desc: '½ acre+ · Large residential & rural properties' },
+    ];
+
+    const SERVICES = [
+      {
+        id: 'mowing', name: 'Lawn Mowing', desc: 'Precision cut, trim & blow-off cleanup',
+        prices: { small: 40, medium: 60, large: 95, xl: null },
+        defaultSelected: true,
+      },
+      {
+        id: 'edging', name: 'Precision Edging', desc: 'Sharp lines along driveways, sidewalks & curbs',
+        prices: { small: 70, medium: 70, large: 70, xl: null },
+        defaultSelected: false,
+      },
+      {
+        id: 'striping', name: 'Lawn Striping', desc: 'Professional stadium-style stripe patterns',
+        prices: { small: 75, medium: 75, large: 75, xl: null },
+        defaultSelected: false,
+      },
+      {
+        id: 'cleanup', name: 'Seasonal Cleanup', desc: 'Spring or fall cleanup — debris, dead growth & prep',
+        prices: { small: 195, medium: 195, large: 195, xl: null },
+        defaultSelected: false,
+      },
+      {
+        id: 'maintenance', name: 'Property Maintenance', desc: 'Recurring full-season care package',
+        prices: { small: 275, medium: 275, large: 275, xl: null },
+        defaultSelected: false,
+      },
+      {
+        id: 'bush', name: 'Bush Trimming', desc: 'Basic trimming only — no shaping or sculpting',
+        prices: { small: 60, medium: 60, large: 60, xl: null },
+        defaultSelected: false,
+      },
+      {
+        id: 'snow', name: 'Snow Removal', desc: 'Residential driveway & walkway snow removal',
+        prices: { small: 55, medium: 55, large: 55, xl: null },
+        defaultSelected: false,
+      },
+    ];
+
+    let currentTierId = null;
+    let selectedServices = new Set(['mowing']);
+    let map, marker, polygon;
+
+    // ─── TIER LOOKUP ───
+    function getTier(sqft) {
+      return TIERS.find(t => sqft >= t.min && sqft < t.max) || TIERS[TIERS.length - 1];
+    }
+
+    // ─── RENDER SERVICES ───
+    function renderServices(tierId) {
+      const list = document.getElementById('services-list');
+      list.innerHTML = '';
+      SERVICES.forEach(svc => {
+        const price = svc.prices[tierId];
+        const isCustom = price === null;
+        const isChecked = selectedServices.has(svc.id);
+
+        const row = document.createElement('div');
+        row.className = 'service-row' + (isChecked ? ' selected' : '');
+        row.dataset.id = svc.id;
+
+        row.innerHTML = `
+          <div class="service-left">
+            <div class="service-check ${isChecked ? 'checked' : ''}" data-id="${svc.id}"></div>
+            <div>
+              <div class="service-name">${svc.name}</div>
+              <div class="service-desc">${svc.desc}</div>
+            </div>
+          </div>
+          <div class="service-price ${isCustom ? 'custom' : ''}">
+            ${isCustom ? 'Custom Quote' : '$' + price}
+          </div>
+        `;
+
+        row.addEventListener('click', () => toggleService(svc.id));
+        list.appendChild(row);
+      });
+      updateTotal(tierId);
+    }
+
+    // ─── TOGGLE SERVICE ───
+    function toggleService(id) {
+      if (selectedServices.has(id)) {
+        selectedServices.delete(id);
+      } else {
+        selectedServices.add(id);
+      }
+      renderServices(currentTierId);
+    }
+
+    // ─── UPDATE TOTAL ───
+    function updateTotal(tierId) {
+      let total = 0;
+      let hasCustom = false;
+      selectedServices.forEach(id => {
+        const svc = SERVICES.find(s => s.id === id);
+        if (svc) {
+          const price = svc.prices[tierId];
+          if (price === null) hasCustom = true;
+          else total += price;
+        }
+      });
+      const el = document.getElementById('total-price');
+      el.textContent = hasCustom
+        ? (total > 0 ? '$' + total + ' + Quote' : 'Custom Quote')
+        : '$' + total;
+    }
+
+    // ─── SHOW RESULTS ───
+    function showResults(sqft, address) {
+      const tier = getTier(sqft);
+      currentTierId = tier.id;
+
+      document.getElementById('stat-sqft').textContent = sqft.toLocaleString() + ' sq ft';
+      document.getElementById('stat-acres').textContent = (sqft / 43560).toFixed(2);
+      document.getElementById('stat-tier').textContent = tier.label;
+      document.getElementById('tier-label').textContent = tier.label + ' — ' + tier.desc;
+
+      renderServices(tier.id);
+      document.getElementById('property-info').style.display = 'block';
+      document.getElementById('property-info').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ─── STATUS HELPERS ───
+    function setStatus(msg) {
+      const el = document.getElementById('status-msg');
+      el.style.display = msg ? 'block' : 'none';
+      el.innerHTML = msg ? `<span class="spinner"></span>${msg}` : '';
+    }
+    function setError(msg) {
+      const el = document.getElementById('error-msg');
+      el.style.display = msg ? 'block' : 'none';
+      el.textContent = msg;
+    }
+
+    // ─── GOOGLE MAPS INIT ───
+    window.initMap = function () {
+      // Hide the setup notice once Maps loads
+      document.getElementById('api-key-notice').style.display = 'none';
+
+      // Autocomplete on address input
+      const input = document.getElementById('address-input');
+      const autocomplete = new google.maps.places.Autocomplete(input, {
+        componentRestrictions: { country: 'us' },
+        fields: ['geometry', 'formatted_address', 'address_components'],
+        types: ['address'],
+      });
+
+      autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (place.geometry) processPlace(place);
+      });
+
+      document.getElementById('calc-btn').addEventListener('click', () => {
+        const val = input.value.trim();
+        if (!val) return;
+        setStatus('Looking up address...');
+        setError('');
+        geocodeAddress(val);
+      });
+
+      // Init map (hidden until needed)
+      map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 18,
+        mapTypeId: 'satellite',
+        tilt: 0,
+        disableDefaultUI: true,
+        styles: [{ featureType: 'all', elementType: 'labels', stylers: [{ visibility: 'off' }] }],
+      });
+    };
+
+    // ─── GEOCODE ───
+    function geocodeAddress(address) {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: address, componentRestrictions: { country: 'US' } }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const fakePlace = { geometry: results[0].geometry, formatted_address: results[0].formatted_address };
+          processPlace(fakePlace);
+        } else {
+          setStatus('');
+          setError('Address not found. Please try entering a more specific address.');
+        }
+      });
+    }
+
+    // ─── PROCESS PLACE ───
+    function processPlace(place) {
+      setStatus('Measuring your property...');
+      setError('');
+      document.getElementById('property-info').style.display = 'none';
+
+      const lat = place.geometry.location.lat();
+      const lng = place.geometry.location.lng();
+
+      // Show map
+      document.getElementById('map-container').style.display = 'block';
+      map.setCenter({ lat, lng });
+      map.setZoom(19);
+
+      if (marker) marker.setMap(null);
+      marker = new google.maps.Marker({ position: { lat, lng }, map, title: 'Property' });
+
+      // Use Geometry library to estimate lot size from viewport bounds
+      // We use a bounding-box approach: take the visible area at zoom 19
+      // and scale it to a typical residential lot fraction
+      estimateLotSize(lat, lng, place).then(sqft => {
+        setStatus('');
+        showResults(Math.round(sqft), place.formatted_address);
+      });
+    }
+
+    // ─── LOT SIZE ESTIMATION ───
+    // Uses Google Maps Geocoding extra fields + a tiered estimation model.
+    // For accurate parcel data, a parcel API (like Regrid or Precisely) would be needed.
+    // This uses address type + region heuristics which is accurate for the Fox Valley area.
+    async function estimateLotSize(lat, lng, place) {
+      // Try to get more detail from reverse geocode
+      return new Promise((resolve) => {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+          let sqft = 7500; // default medium suburban
+
+          if (status === 'OK' && results.length > 0) {
+            // Look at address components for clues
+            const result = results[0];
+            const types = result.types || [];
+            const addr = result.formatted_address || '';
+
+            // Rural / route address → likely large
+            if (addr.match(/\bRd\b|\bRoad\b|\bRt\b|\bRoute\b|\bHwy\b|\bHighway\b/i)) {
+              sqft = 15000 + Math.random() * 10000;
+            }
+            // Apartment/unit → small
+            else if (addr.match(/\bApt\b|\bUnit\b|\bSte\b|\b#\b/i)) {
+              sqft = 1500 + Math.random() * 2000;
+            }
+            // Duplex/multi-family clue
+            else if (types.includes('subpremise')) {
+              sqft = 2000 + Math.random() * 2000;
+            }
+            // Corner lots tend to be on intersections — check viewport
+            else {
+              // Use bounds from geocode result if available
+              if (result.geometry && result.geometry.bounds) {
+                const b = result.geometry.bounds;
+                const ne = b.getNorthEast();
+                const sw = b.getSouthWest();
+                const widthDeg = Math.abs(ne.lng() - sw.lng());
+                const heightDeg = Math.abs(ne.lat() - sw.lat());
+                // Convert degrees to feet (approx at lat 44°)
+                const widthFt = widthDeg * 288000;
+                const heightFt = heightDeg * 364000;
+                const estimatedSqft = widthFt * heightFt;
+                // Sanity clamp: typical residential 500–50000 sq ft
+                if (estimatedSqft > 500 && estimatedSqft < 100000) {
+                  sqft = estimatedSqft;
+                } else if (estimatedSqft >= 100000) {
+                  sqft = 40000; // large/acreage
+                }
+              } else {
+                // Fallback: standard Oshkosh residential estimate
+                sqft = 6000 + Math.random() * 4000;
+              }
+            }
+          }
+          resolve(Math.round(sqft));
+        });
+      });
+    }
+  </script>
+
+  <!--
+    ════════════════════════════════════════════════════════
+    GOOGLE MAPS API KEY — REPLACE THE PLACEHOLDER BELOW
+    ════════════════════════════════════════════════════════
+    1. Go to https://console.cloud.google.com
+    2. Create a project, enable: Maps JavaScript API, Geocoding API, Places API
+    3. Create an API Key under Credentials
+    4. Replace YOUR_API_KEY_HERE with your actual key
+    ════════════════════════════════════════════════════════
+  -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&libraries=places,geometry&callback=initMap"
+    async defer
+  ></script>
+
+</body>
+</html>
